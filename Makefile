@@ -29,7 +29,7 @@ libogg:
 
 libtheora: libogg
 	cd libtheora* && \
-		env CPPFLAGSls='-I../libogg-1.3.1/include' LDFLAGS='-L../libogg-1.3.1/src/.libs' sh ./configure --disable-shared && \
+		env CPPFLAGS='-I../libogg-1.3.1/include' LDFLAGS='-L../libogg-1.3.1/src/.libs' sh ./configure --disable-shared && \
 		make
 
 libvorbis: libogg
