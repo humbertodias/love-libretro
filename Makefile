@@ -22,13 +22,12 @@ zlib:
 		sh ./configure --static && \
 		make
 
-freetype: bzip2 zlib
+freetype: bzip2 zlib libogg
 	cd ${LIBTHEORA_DIR} && \
 		env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR}' \
 		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR}' sh ./configure --without-png && \
 		make
-
-# Compilação do libmodplug
+    
 libmodplug:
 	cd ${LIBMODPLUG_DIR} && \
 		rm -rf build libmodplug && \
