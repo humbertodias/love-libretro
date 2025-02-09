@@ -24,8 +24,8 @@ zlib:
 
 freetype: bzip2 zlib libogg
 	cd ${LIBTHEORA_DIR} && \
-		env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR}' \
-		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR}' sh ./configure --without-png && \
+		env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
+		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' sh ./configure --without-png && \
 		make
     
 libmodplug:
