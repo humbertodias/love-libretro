@@ -17,6 +17,7 @@ freetype:
 
 libmodplug:
 	cd libmodplug* && \
+		rm -rf build libmodplug && \
 		ln -s src libmodplug && \
 		mkdir build && cd build && \
 		cmake -D CMAKE_C_FLAGS='-include stdint.h -DHAVE_SINF' -D CMAKE_CXX_FLAGS='-include stdint.h -DHAVE_SINF' .. && \
