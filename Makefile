@@ -9,11 +9,11 @@ zlib:
 		sh ./configure --static && \
 		make
 
-freetype:
-	cd freetype* && \
-		env CPPFLAGS='-I../bzip2-1.0.6 -I../zlib-1.2.8' \
-		LDFLAGS='-L../bzip2-1.0.6 -L../zlib-1.2.8' sh ./configure --without-png && \
-		make
+freetype:	bzip2 zlib
+  cd freetype* && \
+      env CPPFLAGS='-I../bzip2-1.0.6 -I../zlib-1.2.8' \
+      LDFLAGS='-L../bzip2-1.0.6 -L../zlib-1.2.8' sh ./configure --without-png && \
+      make
 
 libmodplug:
 	cd libmodplug* && \
@@ -64,14 +64,14 @@ love:
 		g++ -o love love.o  -L../libvorbis-1.3.3/lib/.libs -L../physfs-2.0.3/build ./.libs/liblove.a -L../freetype-2.5.0.1/objs/.libs -L../luajit-2.0.3/src -L../openal-soft-1.16.0/build -L../zlib-1.2.8 -L../libmodplug-0.8.8.5/build -L../libogg-1.3.2/src/.libs -L../libtheora-1.1beta3/lib/.libs -lSDL2 -lphysfs -L../bzip2-1.0.6 -L../zlib-1.2.8 -lOpenAL -lcommon -lmodplug -lm ../libtheora-1.1beta3/lib/.libs/libtheora.a -ldl -lpthread -lluajit -lz -Wl,-rpath -Wl,../freetype-2.5.0.1/objs/.libs/.libs -Wl,-rpath -Wl,../libvorbis-1.3.3/lib/.libs/.libs -Wl,-rpath -Wl,../libvorbis-1.3.3/lib/.libs -Wl,-rpath -Wl,../libogg-1.3.2/src/.libs/.libs
 
 clean:
-	(cd bzip2* && make clean)
-	(cd zlib* && make clean)
-	(cd freetype* && make clean)
+	(cd bzip2* && [ -f Makefile ] && make clean || true)
+	(cd zlib* && [ -f Makefile ] && make clean || true)
+	(cd freetype* && [ -f Makefile ] && make clean || true)
 	(cd libmodplug* && rm -rf build libmodplug)
-	(cd libogg* && make clean)
-	(cd libtheora* && make clean)
-	(cd libvorbis* && make clean)
-	(cd LuaJIT* && make clean)
+	(cd libogg* && [ -f Makefile ] && make clean || true)
+	(cd libtheora* && [ -f Makefile ] && make clean || true)
+	(cd libvorbis* && [ -f Makefile ] && make clean || true)
+	(cd LuaJIT* && [ -f Makefile ] && make clean || true)
 	(cd openal* && rm -rf build)
 	(cd physfs* && rm -rf build)
 	(cd love* && [ -f Makefile ] && make clean || true)
