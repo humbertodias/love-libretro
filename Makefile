@@ -66,7 +66,7 @@ clean:
 	(cd bzip2* && make clean)
 	(cd zlib* && make clean)
 	(cd freetype* && make clean)
-	(cd libmodplug* && rm -rf build)
+	(cd libmodplug* && rm -rf build libmodplug)
 	(cd libogg* && make clean)
 	(cd libtheora* && make clean)
 	(cd libvorbis* && make clean)
