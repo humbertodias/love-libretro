@@ -1,7 +1,8 @@
 [submodule "sdl"]
 	path = sdl
 	url = https://github.com/libsdl-org/SDL
-	tag = release-3.2.4
+	branch = main
+	tag = release-3.2.0
 [submodule "luajit"]
 	path = luajit
 	url = https://github.com/LuaJIT/LuaJIT.git
@@ -9,14 +10,17 @@
 [submodule "bzip2"]
 	path = bzip2
 	url = https://sourceware.org/git/bzip2.git
+	branch = master
 	tag = bzip2-1.0.8
 [submodule "freetype"]
 	path = freetype
 	url = https://git.savannah.gnu.org/git/freetype/freetype2.git
+	branch = master
 	tag = VER-2.13.3
 [submodule "libogg"]
 	path = libogg
 	url = https://github.com/xiph/ogg.git
+	branch = master
 	tag = v1.3.5
 [submodule "libtheora"]
 	path = libtheora
@@ -25,6 +29,7 @@
 [submodule "libvorbis"]
 	path = libvorbis
 	url = https://github.com/xiph/vorbis.git
+	branch = master
 	tag = v1.3.7
 [submodule "love"]
 	path = love
@@ -33,6 +38,8 @@
 [submodule "openal-soft"]
 	path = openal-soft
 	url = https://github.com/kcat/openal-soft.git
+	branch = main
+	branch = master
 	tag = 1.23.1
 [submodule "physfs"]
 	path = physfs
@@ -41,8 +48,10 @@
 [submodule "zlib"]
 	path = zlib
 	url = https://github.com/madler/zlib.git
+	branch = main
 	tag = v1.3.1
 [submodule "harfbuzz"]
 	path = harfbuzz
 	url = https://github.com/harfbuzz/harfbuzz
+	branch = main
 	tag = 10.2.0
