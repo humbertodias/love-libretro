@@ -1,7 +1,7 @@
 PWD := $(shell pwd)
 BZIP2_DIR := ${PWD}/bzip2
 FREETYPE_DIR := ${PWD}/freetype
-LIBMODPLUG_DIR := ${PWD}/libmodplug-0.8.8.5
+LIBMODPLUG_DIR := ${PWD}/libmodplug-0.8.9.0
 LIBOGG_DIR := ${PWD}/libogg
 LIBTHEORA_DIR := ${PWD}/libtheora
 LIBVORBIS_DIR := ${PWD}/libvorbis
@@ -29,17 +29,27 @@ zlib:
 
 freetype: bzip2 zlib libogg
 	cd ${FREETYPE_DIR} && \
-    autoreconf -fi && \
 		env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
-		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' sh ./configure --disable-shared --without-png && \
+		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' sh ./autogen.sh && ./configure --disable-shared --without-png && \
 		make
     
-libmodplug:
+libmodplug-download:
+	@if [ ! -d "libmodplug-0.8.9.0" ]; then \
+		if wget --spider 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz?viasf=1'; then \
+			echo "Link disponível. Iniciando download..."; \
+			wget -O libmodplug.tar.gz 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz?viasf=1'; \
+			tar xvfz libmodplug.tar.gz; \
+			rm libmodplug.tar.gz; \
+		fi \
+	fi; \
+	rm -rf libmodplug; \
+	ln -s libmodplug-0.8.9.0 libmodplug
+
+libmodplug: libmodplug-download
 	cd ${LIBMODPLUG_DIR} && \
 		rm -rf build libmodplug && \
 		ln -s src libmodplug && \
-		mkdir build && cd build && \
-		cmake -D CMAKE_C_FLAGS='-include stdint.h -DHAVE_SINF' -D CMAKE_CXX_FLAGS='-include stdint.h -DHAVE_SINF' .. && \
+		sh ./configure --disable-shared && \
 		make
 
 libogg:
@@ -49,12 +59,14 @@ libogg:
 
 libtheora: libogg
 	cd ${LIBTHEORA_DIR} && \
-		env OGG_CFLAGS='-I${LIBOGG_DIR}/include' OGG_LIBS='-L${LIBOGG_DIR}/src/.libs' sh ./autogen.sh && ./configure --disable-shared && \
-		make
+	sh ./autogen.sh && ./configure --disable-shared \
+  --with-ogg-libraries=${LIBOGG_DIR}/src/.libs --with-ogg-includes=${LIBOGG_DIR}/include && \
+	make
 
 libvorbis: libogg
 	cd ${LIBVORBIS_DIR} && \
-		env CPPFLAGS='-I${LIBOGG_DIR}/include' LDFLAGS='-L${LIBOGG_DIR}/src/.libs' sh ./configure --disable-shared && \
+		sh ./autogen.sh && ./configure --disable-shared \
+    --with-ogg-libraries=${LIBOGG_DIR}/src/.libs --with-ogg-includes=${LIBOGG_DIR}/include && \
 		make
 
 luajit:
@@ -81,12 +93,14 @@ sdl:
     cmake -Bbuild -D SDL_STATIC_ENABLED_BY_DEFAULT=ON && \
     cmake --build build
 
+# ./configure --disable-shared --disable-mpg123
 love:
 	cd ${LOVE_DIR} && \
-    autoreconf -fi && \
-		env lua_CFLAGS='-I${LUAJIT_DIR}/src' lua_LIBS='-L${LUAJIT_DIR}/src' freetype2_CFLAGS='-I${FREETYPE_DIR}/include' freetype2_LIBS='-L${FREETYPE_DIR}/objs/.libs' openal_CFLAGS='-I${OPENAL_DIR}/include' openal_LIBS='-L${OPENAL_DIR}/build' libmodplug_CFLAGS='-I${LIBMODPLUG_DIR}' libmodplug_LIBS='-L${LIBMODPLUG_DIR}/build' vorbisfile_CFLAGS='-I${LIBOGG_DIR}/include -I${LIBVORBIS_DIR}/include' vorbisfile_LIBS='-L${LIBOGG_DIR}/src/.libs -L${LIBVORBIS_DIR}/lib/.libs' zlib_CFLAGS='-I${ZLIB_DIR}' zlib_LIBS='-L${ZLIB_DIR}' theora_CFLAGS='-I${LIBTHEORA_DIR}/include' theora_LIBS='-L${LIBTHEORA_DIR}/lib/.libs' CPPFLAGS='-I${PHYSFS_DIR}' LDFLAGS='-L${PHYSFS_DIR}/build' CPPFLAGS='-I${SDL_DIR}/include' LDFLAGS='-L${SDL_DIR}/build' sh ./configure --disable-shared --disable-mpg123 && \
+		env lua_CFLAGS='-I${LUAJIT_DIR}/src' lua_LIBS='-L${LUAJIT_DIR}/src' freetype2_CFLAGS='-I${FREETYPE_DIR}/include' freetype2_LIBS='-L${FREETYPE_DIR}/objs/.libs' openal_CFLAGS='-I${OPENAL_DIR}/include' openal_LIBS='-L${OPENAL_DIR}/build' libmodplug_CFLAGS='-I${LIBMODPLUG_DIR}' libmodplug_LIBS='-L${LIBMODPLUG_DIR}/build' vorbisfile_CFLAGS='-I${LIBOGG_DIR}/include -I${LIBVORBIS_DIR}/include' vorbisfile_LIBS='-L${LIBOGG_DIR}/src/.libs -L${LIBVORBIS_DIR}/lib/.libs' zlib_CFLAGS='-I${ZLIB_DIR}' zlib_LIBS='-L${ZLIB_DIR}' theora_CFLAGS='-I${LIBTHEORA_DIR}/include' theora_LIBS='-L${LIBTHEORA_DIR}/lib/.libs' CPPFLAGS='-I${PHYSFS_DIR}' LDFLAGS='-L${PHYSFS_DIR}/build' CPPFLAGS='-I${SDL_DIR}/include' LDFLAGS='-L${SDL_DIR}/build' \
+	sh cmake -Bbuild && \ 
+	cmake --build build  && \
 		make LIBS='-lfreetype -lOpenAL -lcommon -lmodplug -logg -lvorbis -lvorbisfile -ltheora -ldl -lpthread -lluajit -lz -lSDL2' && \
-		${CC} -o love2d love.o -L${LIBVORBIS_DIR}/lib/.libs -L${PHYSFS_DIR}/build ./.libs/liblove.a -L${FREETYPE_DIR}/objs/.libs -L${LUAJIT_DIR}/src -L${OPENAL_DIR}/build -L${ZLIB_DIR} -L${LIBMODPLUG_DIR}/build -L${LIBOGG_DIR}/src/.libs -L${LIBTHEORA_DIR}/lib/.libs -lSDL2 -lphysfs -L${ZLIB_DIR} -L${ZLIB_DIR} -lOpenAL -lcommon -lmodplug -lm ${LIBTHEORA_DIR}/lib/.libs/libtheora.a -ldl -lpthread -lluajit -lz -Wl,-rpath -Wl,${FREETYPE_DIR}/objs/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs -Wl,-rpath -Wl,${LIBOGG_DIR}/src/.libs/.libs
+		${CC} -o love2d love.o -L${LIBVORBIS_DIR}/lib/.libs -L${PHYSFS_DIR}/build ./.libs/liblove.a -L${FREETYPE_DIR}/objs/.libs -L${LUAJIT_DIR}/src -L${OPENAL_DIR}/build -L${ZLIB_DIR} -L${LIBMODPLUG_DIR}/build -L${LIBOGG_DIR}/src/.libs -L${LIBTHEORA_DIR}/lib/.libs -lSDL2 -lphysfs -L${ZLIB_DIR} -L${ZLIB_DIR} -lOpenAL -lcommon -lmodplug -lm ${LIBTHEORA_DIR}/lib/.libs/libtheora.a -ldl -lpthread -lluajit -lSDL2 -lz -Wl,-rpath -Wl,${FREETYPE_DIR}/objs/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs -Wl,-rpath -Wl,${LIBOGG_DIR}/src/.libs/.libs
 
 clean:
 	(cd ${BZIP2_DIR} && [ -f Makefile ] && make clean || true)
@@ -106,4 +120,4 @@ builder:
 	docker build --platform linux/amd64 -t love-libretro-builder .
 	docker run -it --platform linux/amd64 -w /builder -v ${PWD}:/builder love-libretro-builder make
 
-.PHONY: all submodule-update bzip2 zlib freetype libmodplug libogg libtheora libvorbis luajit openal physfs sdl2 love clean builder
+.PHONY: all submodule-update bzip2 zlib freetype libmodplug libogg libtheora libvorbis luajit openal physfs sdl love clean builder
