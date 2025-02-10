@@ -5,7 +5,7 @@
 [submodule "luajit"]
 	path = luajit
 	url = https://github.com/LuaJIT/LuaJIT.git
-	tag = v2.1.ROLLING
+	branch = v2.1
 [submodule "bzip2"]
 	path = bzip2
 	url = https://sourceware.org/git/bzip2.git
@@ -42,3 +42,7 @@
 	path = zlib
 	url = https://github.com/madler/zlib.git
 	tag = v1.3.1
+[submodule "harfbuzz"]
+	path = harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz
+	tag = 10.2.0
