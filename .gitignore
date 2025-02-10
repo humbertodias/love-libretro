@@ -1,6 +1,5 @@
 *.[oa]
 *.dll
 *.so
-#.dylib
+*.dylib
 *~
-

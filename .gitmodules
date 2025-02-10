@@ -1,0 +1,44 @@
+[submodule "sdl"]
+	path = sdl
+	url = https://github.com/libsdl-org/SDL
+	tag = release-2.32.0
+[submodule "luajit"]
+	path = luajit
+	url = https://github.com/LuaJIT/LuaJIT.git
+	tag = v2.1.ROLLING
+[submodule "bzip2"]
+	path = bzip2
+	url = https://sourceware.org/git/bzip2.git
+	tag = bzip2-1.0.8
+[submodule "freetype"]
+	path = freetype
+	url = https://git.savannah.gnu.org/git/freetype/freetype2.git
+	tag = VER-2-9-1
+[submodule "libogg"]
+	path = libogg
+	url = https://github.com/xiph/ogg.git
+	tag = v1.3.5
+[submodule "libtheora"]
+	path = libtheora
+	url = https://github.com/xiph/theora.git
+	tag = v1.0
+[submodule "libvorbis"]
+	path = libvorbis
+	url = https://github.com/xiph/vorbis.git
+	tag = v1.3.7
+[submodule "love"]
+	path = love
+	url = https://github.com/love2d/love.git
+	tag = 11.5
+[submodule "openal-soft"]
+	path = openal-soft
+	url = https://github.com/kcat/openal-soft.git
+	tag = 1.24.2
+[submodule "physfs"]
+	path = physfs
+	url = https://github.com/icculus/physfs.git
+	tag = release-3.2.0
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/madler/zlib.git
+	tag = v1.3.1
