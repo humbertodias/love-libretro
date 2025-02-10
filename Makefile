@@ -20,13 +20,40 @@ all: submodule-update bzip2 zlib freetype libmodplug libogg libtheora libvorbis 
 submodule-update:
 	git submodule update --init --recursive
 
-	@for submodule in $$(git config --file .gitmodules --get-regexp path | awk '{ print $$2 }'); do \
-		cd $$submodule; git clean -df ; \
-		branch=$$(git symbolic-ref --short HEAD 2>/dev/null || echo "Detached HEAD"); \
-		tag=$$(git describe --tags --exact-match 2>/dev/null || echo "No associated tag"); \
-		echo "$$submodule - Branch: [$$branch] Tag: [$$tag]"; \
+	@for SUBMODULE in $$(git config --file .gitmodules --get-regexp path | awk '{ print $$2 }'); do \
+		echo "Processing submodule: $$SUBMODULE"; \
+		cd $$SUBMODULE; \
+		git clean -df; git reset HEAD --hard ;\
+		\
+		# Retrieve branch and tag from .gitmodules \
+		BRANCH=$$(git config --file ../.gitmodules --get submodule.$$SUBMODULE.branch || echo ""); \
+		TAG=$$(git config --file ../.gitmodules --get submodule.$$SUBMODULE.tag || echo ""); \
+		\
+		# Fallback to current branch or tag if not specified in .gitmodules \
+		if [ -z "$$BRANCH" ]; then \
+			BRANCH=$$(git rev-parse --abbrev-ref HEAD 2>/dev/null); \
+			if [ "$$BRANCH" = "HEAD" ]; then BRANCH="Detached HEAD"; fi; \
+		fi; \
+		\
+		if [ -z "$$TAG" ]; then \
+			TAG=$$(git describe --tags --exact-match 2>/dev/null || echo ""); \
+		fi; \
+		\
+		# Checkout logic \
+		if [ "$$BRANCH" != "Detached HEAD" ]; then \
+			echo "Checking out branch $$BRANCH"; \
+			git checkout $$BRANCH; \
+		elif [ -n "$$TAG" ]; then \
+			echo "Checking out tag $$TAG"; \
+			git checkout $$TAG; \
+		else \
+			echo "No branch or tag to checkout for $$SUBMODULE"; \
+		fi; \
+		\
+		echo "$$SUBMODULE - Branch: [$$BRANCH] Tag: [$$TAG]"; \
 		cd - >/dev/null; \
 	done
+
 
 BZIP2_LIB_DIR := ${BZIP2_DIR}
 BZIP2_INC_DIR := ${BZIP2_DIR}
@@ -125,8 +152,8 @@ SDL_LIB_DIR := ${SDL_DIR}/build
 SDL_INC_DIR := ${SDL_DIR}/include
 sdl:
 	cd ${SDL_DIR} && \
-    cmake -Bbuild -D SDL_STATIC_ENABLED_BY_DEFAULT=ON && \
-    cmake --build ${SDL_DIR}/build
+    cmake -Bbuild -D SDL_SHARED_DEFAULT=OFF -D SDL_STATIC_DEFAULT=ON -D SDL_SHARED_AVAILABLE=OFF -D BUILD_SHARED_LIBS=OFF && \
+    cd build && make
 
 HARFBUZZ_LIB_DIR := ${HARFBUZZ_DIR}/build
 HARFBUZZ_INC_DIR := ${HARFBUZZ_DIR}/src
@@ -135,23 +162,16 @@ harfbuzz:
     cmake -Bbuild -D BUILD_SHARED_LIBS=OFF && \
     cmake --build ${HARFBUZZ_DIR}/build
 
+LOVE_LIB_DIR := ${LOVE_DIR}/build
+LOVE_INC_DIR := ${LOVE_DIR}/src
+LOVE_SRC_FILES := $(shell find ${LOVE_DIR}/src -name '*.cpp')
 love:
 	cd ${LOVE_DIR} && \
-	cmake -B build -S. -D BUILD_SHARED_LIBS=OFF -D LOVE_MPG123=OFF -D LOVE_JIT=ON -Wno-dev --trace \
-  -D SDL3_LIBRARIES=${SDL_LIB_DIR} -D SDL3_INCLUDE_DIRS=${SDL_INC_DIR} -DLOVE_USE_SDL3=ON -DSDL3_ROOT=${SDL_DIR} \
-  -D FREETYPE_LIBRARY=${FREETYPE_LIB_DIR} -D FREETYPE_INCLUDE_DIRS=${FREETYPE_INC_DIR} \
-  -D HARFBUZZ_LIBRARY=${HARFBUZZ_LIB_DIR} -D HARFBUZZ_INCLUDE_DIR=${HARFBUZZ_INC_DIR} -DHarfbuzz_ROOT=${HARFBUZZ_DIR} \
-  -D OPENAL_LIBRARY=${OPENAL_LIB_DIR} -D OPENAL_INCLUDE_DIR=${OPENAL_INC_DIR} \
-  -D MODPLUG_LIBRARY=${LIBMODPLUG_LIB_DIR} -D MODPLUG_INCLUDE_DIR=${LIBMODPLUG_INC_DIR} -DModPlug_ROOT=${LIBMODPLUG_DIR} \
-  -D THEORA_LIBRARY=${LIBTHEORA_LIB_DIR} -D THEORADEC_LIBRARY=${LIBTHEORA_LIB_DIR} -D THEORA_INCLUDE_DIR=${LIBTHEORA_INC_DIR} -DTheora_ROOT=${LIBTHEORA_DIR} \
-  -D VORBIS_LIBRARY=${LIBVORBIS_LIB_DIR} -D VORBISFILE_LIBRARY=${LIBVORBIS_LIB_DIR} -D VORBIS_INCLUDE_DIR=${LIBVORBIS_INC_DIR} \
-  -D OGG_LIBRARY=${LIBOGG_LIB_DIR} -D OGG_INCLUDE_DIR=${LIBOGG_INC_DIR} -DVorbis_ROOT=${LIBOGG_DIR} \
-  -D LOVE_JIT=TRUE -D LUAJIT_LIBRARY=${LUAJIT_LIB_DIR} -D LUAJIT_INCLUDE_DIR=${LUAJIT_INC_DIR} -DLuaJIT_ROOT=${LUAJIT_DIR} \
-  -D ZLIB_ROOT=${ZLIB_DIR} \
-  -D Ogg_ROOT=${LIBOGG_DIR}
-	cd ${LOVE_DIR}/build && make
-
-       
+  mkdir -p build && cd build && \
+	${CC} -v -c ${LOVE_SRC_FILES} -I ${LOVE_INC_DIR}/libraries -I ${LOVE_INC_DIR} -I ${LOVE_INC_DIR}/modules -I ${LOVE_INC_DIR}/libraries/enet/libenet/include -I ${LUAJIT_INC_DIR} -I ${SDL_INC_DIR} -I ${SDL_INC_DIR}/SDL3 -I ${PHYSFS_INC_DIR} -I ${FREETYPE_INC_DIR} -I ${LIBOGG_INC_DIR} -I ${LIBTHEORA_INC_DIR} \
+  -L${LIBVORBIS_LIB_DIR} -L${PHYSFS_LIB_DIR} -L${FREETYPE_LIB_DIR} -L${LUAJIT_LIB_DIR} -L${OPENAL_LIB_DIR} -L${ZLIB_LIB_DIR} -L${LIBMODPLUG_LIB_DIR} -L${LIBOGG_LIB_DIR} -L${LIBTHEORA_LIB_DIR} -L${SDL_LIB_DIR} -L${ZLIB_LIB_DIR} -L${ZLIB_LIB_DIR} -L${LIBTHEORA_LIB_DIR} \
+  -lphysfs -lOpenAL -lmodplug -lm -ldl -lpthread -lluajit -lSDL3 -lz && \
+  ${CC} -o love2d love.o -L${LOVE_LIB_DIR} -L${LIBVORBIS_LIB_DIR} -L${PHYSFS_LIB_DIR} -L${FREETYPE_LIB_DIR} -L${LUAJIT_LIB_DIR} -L${OPENAL_LIB_DIR} -L${ZLIB_LIB_DIR} -L${LIBMODPLUG_LIB_DIR} -L${LIBOGG_LIB_DIR} -L${LIBTHEORA_LIB_DIR}  -L${SDL_LIB_DIR} -L${ZLIB_LIB_DIR} ${LIBTHEORA_LIB_DIR} -lphysfs -lOpenAL -lmodplug -lm -ldl -lpthread -lluajit -lSDL3 -lz -Wl,-rpath -Wl,${FREETYPE_LIB_DIR} -Wl,-rpath -Wl,${LIBVORBIS_LIB_DIR} -Wl,-rpath -Wl,${LIBVORBIS_LIB_DIR} -Wl,-rpath -Wl,${LIBOGG_LIB_DIR}
 
 clean:
 	(cd ${BZIP2_DIR} && [ -f Makefile ] && make clean || true)
