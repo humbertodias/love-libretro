@@ -10,6 +10,7 @@ LUAJIT_DIR := ${PWD}/LuaJIT-2.1.0-beta2
 OPENAL_DIR := ${PWD}/openal-soft-1.18.0
 PHYSFS_DIR := ${PWD}/physfs-2.0.3
 ZLIB_DIR := ${PWD}/zlib-1.2.8
+CC := g++
 
 all: bzip2 zlib freetype libmodplug libogg libtheora libvorbis luajit openal physfs love
 
@@ -74,7 +75,7 @@ love:
 	cd ${LOVE_DIR} && \
 		env lua_CFLAGS='-I${LUAJIT_DIR}/src' lua_LIBS='-L${LUAJIT_DIR}/src' freetype2_CFLAGS='-I${FREETYPE_DIR}/include' freetype2_LIBS='-L${FREETYPE_DIR}/objs/.libs' openal_CFLAGS='-I${OPENAL_DIR}/include' openal_LIBS='-L${OPENAL_DIR}/build' libmodplug_CFLAGS='-I${LIBMODPLUG_DIR}' libmodplug_LIBS='-L${LIBMODPLUG_DIR}/build' vorbisfile_CFLAGS='-I${LIBOGG_DIR}/include -I${LIBVORBIS_DIR}/include' vorbisfile_LIBS='-L${LIBOGG_DIR}/src/.libs -L${LIBVORBIS_DIR}/lib/.libs' zlib_CFLAGS='-I${ZLIB_DIR}' zlib_LIBS='-L${ZLIB_DIR}' theora_CFLAGS='-I${LIBTHEORA_DIR}/include' theora_LIBS='-L${LIBTHEORA_DIR}/lib/.libs' CPPFLAGS='-I${PHYSFS_DIR}' LDFLAGS='-L${PHYSFS_DIR}/build' sh ./configure --disable-shared --disable-mpg123 && \
 		make LIBS='-lfreetype -lOpenAL -lcommon -lmodplug -logg -lvorbis -lvorbisfile -ltheora -ldl -lpthread -lluajit -lz' && \
-		g++ -o love love.o  -L${LIBVORBIS_DIR}/lib/.libs -L${PHYSFS_DIR}/build ./.libs/liblove.a -L${FREETYPE_DIR}/objs/.libs -L${LUAJIT_DIR}/src -L${OPENAL_DIR}/build -L${ZLIB_DIR} -L${LIBMODPLUG_DIR}/build -L${LIBOGG_DIR}/src/.libs -L${LIBTHEORA_DIR}/lib/.libs -lSDL2 -lphysfs -L${ZLIB_DIR} -L${ZLIB_DIR} -lOpenAL -lcommon -lmodplug -lm ${LIBTHEORA_DIR}/lib/.libs/libtheora.a -ldl -lpthread -lluajit -lz -Wl,-rpath -Wl,${FREETYPE_DIR}/objs/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs -Wl,-rpath -Wl,${LIBOGG_DIR}/src/.libs/.libs
+		${CC} -o love love.o -L${LIBVORBIS_DIR}/lib/.libs -L${PHYSFS_DIR}/build ./.libs/liblove.a -L${FREETYPE_DIR}/objs/.libs -L${LUAJIT_DIR}/src -L${OPENAL_DIR}/build -L${ZLIB_DIR} -L${LIBMODPLUG_DIR}/build -L${LIBOGG_DIR}/src/.libs -L${LIBTHEORA_DIR}/lib/.libs -lSDL2 -lphysfs -L${ZLIB_DIR} -L${ZLIB_DIR} -lOpenAL -lcommon -lmodplug -lm ${LIBTHEORA_DIR}/lib/.libs/libtheora.a -ldl -lpthread -lluajit -lz -Wl,-rpath -Wl,${FREETYPE_DIR}/objs/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs/.libs -Wl,-rpath -Wl,${LIBVORBIS_DIR}/lib/.libs -Wl,-rpath -Wl,${LIBOGG_DIR}/src/.libs/.libs
 
 clean:
 	(cd ${BZIP2_DIR} && [ -f Makefile ] && make clean || true)
