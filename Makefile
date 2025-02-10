@@ -79,7 +79,7 @@ luajit:
 
 openal:
 	cd ${OPENAL_DIR} && \
-		mkdir build && cd build && \
+		mkdir -p build && cd build && \
 		cmake .. && \
 		make && \
 		rm -f libOpenAL.a &&\
@@ -103,7 +103,7 @@ harfbuzz:
 
 love:
 	cd ${LOVE_DIR} && \
-	cmake --trace-expand -B build -S. -D BUILD_SHARED_LIBS=OFF -D LOVE_MPG123=OFF -D LOVE_JIT=ON \
+	cmake -B build -S. -D BUILD_SHARED_LIBS=OFF -D LOVE_MPG123=OFF -D LOVE_JIT=ON -Wno-dev --trace \
   -D SDL3_INCLUDE_DIRS=${SDL_DIR}/include -D SDL3_LIBRARIES=${SDL_DIR}/build \
 	-D FREETYPE_LIBRARY=${FREETYPE_DIR}/objs/.libs -D FREETYPE_INCLUDE_DIRS=${FREETYPE_DIR}/include \
   -D HARFBUZZ_LIBRARY=${HARFBUZZ_DIR}/build -D HARFBUZZ_INCLUDE_DIR=${HARFBUZZ_DIR}/src \
