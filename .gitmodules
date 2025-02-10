@@ -13,7 +13,7 @@
 [submodule "freetype"]
 	path = freetype
 	url = https://git.savannah.gnu.org/git/freetype/freetype2.git
-	tag = VER-2-9-1
+	tag = VER-2.13.3
 [submodule "libogg"]
 	path = libogg
 	url = https://github.com/xiph/ogg.git
@@ -21,7 +21,7 @@
 [submodule "libtheora"]
 	path = libtheora
 	url = https://github.com/xiph/theora.git
-	tag = v1.0
+	tag = v1.2.0alpha1
 [submodule "libvorbis"]
 	path = libvorbis
 	url = https://github.com/xiph/vorbis.git
@@ -33,7 +33,7 @@
 [submodule "openal-soft"]
 	path = openal-soft
 	url = https://github.com/kcat/openal-soft.git
-	tag = 1.24.2
+	tag = 1.23.1
 [submodule "physfs"]
 	path = physfs
 	url = https://github.com/icculus/physfs.git

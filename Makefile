@@ -1,6 +1,7 @@
 PWD := $(shell pwd)
 BZIP2_DIR := ${PWD}/bzip2
 FREETYPE_DIR := ${PWD}/freetype
+LIBMODPLUG_VERSION := '0.8.8.5'
 LIBMODPLUG_DIR := ${PWD}/libmodplug
 LIBOGG_DIR := ${PWD}/libogg
 LIBTHEORA_DIR := ${PWD}/libtheora
@@ -36,23 +37,32 @@ zlib:
     sh ./configure --static && \
 		make
 
-freetype: bzip2 zlib libogg
+freetype: bzip2
 	cd ${FREETYPE_DIR} && \
-		env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
-		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' sh ./autogen.sh && ./configure --disable-shared --without-png && \
-		make
-    
+  env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
+	LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' \
+  	cmake -B build -D BUILD_SHARED_LIBS=OFF \
+			         -D FT_REQUIRE_ZLIB=FALSE \
+               -D FT_REQUIRE_PNG=FALSE \
+               -D FT_REQUIRE_HARFBUZZ=FALSE \
+               -D FT_REQUIRE_BROTLI=FALSE \
+               -D FT_REQUIRE_BZIP2=TRUE \
+               -D BZIP2_LIBRARIES=${BZIP2_DIR} -D BZIP2_INCLUDE_DIR=${BZIP2_DIR} \
+               && \
+    cmake --build build
+
+# https://github.com/love2d/love/actions/runs/13228350529/job/36922098103    
 libmodplug-download:
-	@if [ ! -d "libmodplug-0.8.9.0" ]; then \
-		if wget --spider 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz?viasf=1'; then \
+	@if [ ! -d "libmodplug-${LIBMODPLUG_VERSION}" ]; then \
+		if wget --spider 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/${LIBMODPLUG_VERSION}/libmodplug-${LIBMODPLUG_VERSION}.tar.gz?viasf=1'; then \
 			echo "Link disponível. Iniciando download..."; \
-			wget -O libmodplug.tar.gz 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz?viasf=1'; \
+			wget -O libmodplug.tar.gz 'https://razaoinfo.dl.sourceforge.net/project/modplug-xmms/libmodplug/${LIBMODPLUG_VERSION}/libmodplug-${LIBMODPLUG_VERSION}.tar.gz?viasf=1'; \
 			tar xvfz libmodplug.tar.gz; \
 			rm libmodplug.tar.gz; \
 		fi \
 	fi; \
 	rm -rf libmodplug; \
-	ln -s libmodplug-0.8.9.0 libmodplug
+	ln -s libmodplug-${LIBMODPLUG_VERSION} libmodplug
 
 libmodplug: libmodplug-download
 	cd ${LIBMODPLUG_DIR} && \
@@ -113,7 +123,7 @@ love:
 	cd ${LOVE_DIR} && \
 	cmake -B build -S. -D BUILD_SHARED_LIBS=OFF -D LOVE_MPG123=OFF -D LOVE_JIT=ON -Wno-dev --trace \
   -D SDL3_INCLUDE_DIRS=${SDL_DIR}/include -D SDL3_LIBRARIES=${SDL_DIR}/build \
-	-D FREETYPE_LIBRARY=${FREETYPE_DIR}/objs/.libs -D FREETYPE_INCLUDE_DIRS=${FREETYPE_DIR}/include \
+  -D FREETYPE_LIBRARY=${FREETYPE_DIR}/build -D FREETYPE_INCLUDE_DIRS=${FREETYPE_DIR}/include \
   -D HARFBUZZ_LIBRARY=${HARFBUZZ_DIR}/build -D HARFBUZZ_INCLUDE_DIR=${HARFBUZZ_DIR}/src \
   -D OPENAL_LIBRARY=${OPENAL_DIR}/build -D OPENAL_INCLUDE_DIR=${OPENAL_DIR}/include \
   -D MODPLUG_LIBRARY=${LIBMODPLUG_DIR}/src/.libs -D MODPLUG_INCLUDE_DIR=${LIBMODPLUG_DIR} \
