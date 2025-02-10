@@ -28,28 +28,26 @@ submodule-update:
 		cd - >/dev/null; \
 	done
 
+BZIP2_LIB_DIR := ${BZIP2_DIR}
+BZIP2_INC_DIR := ${BZIP2_DIR}
 bzip2:
 	cd ${BZIP2_DIR} && \
   make
 
+ZLIB_LIB_DIR := ${ZLIB_DIR}
+ZLIB_INC_DIR := ${ZLIB_DIR}
 zlib:
 	cd ${ZLIB_DIR} && \
     sh ./configure --static && \
-		make
+    make
 
-freetype: bzip2
+FREETYPE_LIB_DIR := ${FREETYPE_DIR}/objs/.libs
+FREETYPE_INC_DIR := ${FREETYPE_DIR}/include
+freetype:
 	cd ${FREETYPE_DIR} && \
-  env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
-	LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' \
-  	cmake -B build -D BUILD_SHARED_LIBS=OFF \
-			         -D FT_REQUIRE_ZLIB=FALSE \
-               -D FT_REQUIRE_PNG=FALSE \
-               -D FT_REQUIRE_HARFBUZZ=FALSE \
-               -D FT_REQUIRE_BROTLI=FALSE \
-               -D FT_REQUIRE_BZIP2=TRUE \
-               -D BZIP2_LIBRARIES=${BZIP2_DIR} -D BZIP2_INCLUDE_DIR=${BZIP2_DIR} \
-               && \
-    cmake --build build
+	env CPPFLAGS='-I${BZIP2_DIR} -I${ZLIB_DIR} -I${LIBOGG_DIR}' \
+		LDFLAGS='-L${BZIP2_DIR} -L${ZLIB_DIR} -L${LIBOGG_DIR}' sh ./autogen.sh && ./configure --disable-shared --without-png && \
+		make
 
 # https://github.com/love2d/love/actions/runs/13228350529/job/36922098103    
 libmodplug-download:
@@ -64,6 +62,8 @@ libmodplug-download:
 	rm -rf libmodplug; \
 	ln -s libmodplug-${LIBMODPLUG_VERSION} libmodplug
 
+LIBMODPLUG_LIB_DIR := ${LIBMODPLUG_DIR}/src/.libs
+LIBMODPLUG_INC_DIR := ${LIBMODPLUG_DIR}
 libmodplug: libmodplug-download
 	cd ${LIBMODPLUG_DIR} && \
 		rm -rf build libmodplug && \
@@ -71,30 +71,40 @@ libmodplug: libmodplug-download
 		sh ./configure --disable-shared && \
 		make
 
+LIBOGG_LIB_DIR := ${LIBOGG_DIR}/src/.libs
+LIBOGG_INC_DIR := ${LIBOGG_DIR}/include
 libogg:
 	cd ${LIBOGG_DIR} && \
-    cmake -Bbuild -D BUILD_SHARED_LIBS=OFF && \
-    cmake --build build
+		sh ./autogen.sh && ./configure --disable-shared && \
+		make
 
+LIBTHEORA_LIB_DIR := ${LIBTHEORA_DIR}/lib/.libs
+LIBTHEORA_INC_DIR := ${LIBTHEORA_DIR}/include
 libtheora: libogg libvorbis sdl
 	cd ${LIBTHEORA_DIR} && \
 	sh ./autogen.sh && ./configure --disable-shared \
-  --with-ogg-libraries=${LIBOGG_DIR}/src/.libs --with-ogg-includes=${LIBOGG_DIR}/include \
-  --with-vorbis-libraries=${LIBVORBIS_DIR}/src/.libs --with-vorbis-includes=${LIBVORBIS_DIR}/include \
-  --with-sdl-libraries=${SDL_DIR}/src/.libs --with-sdl-includes=${SDL_DIR}/include && \
+  --with-ogg-libraries=${LIBOGG_LIB_DIR} --with-ogg-includes=${LIBOGG_INC_DIR} \
+  --with-vorbis-libraries=${LIBVORBIS_LIB_DIR} --with-vorbis-includes=${LIBVORBIS_INC_DIR} \
+  --with-sdl-libraries=${SDL_LIB_DIR} --with-sdl-includes=${SDL_INC_DIR} && \
 	make
 
+LIBVORBIS_LIB_DIR := ${LIBVORBIS_DIR}/lib/.libs
+LIBVORBIS_INC_DIR := ${LIBVORBIS_DIR}/include
 libvorbis: libogg
 	cd ${LIBVORBIS_DIR} && \
 		sh ./autogen.sh && ./configure --disable-shared \
-    --with-ogg-libraries=${LIBOGG_DIR}/src/.libs --with-ogg-includes=${LIBOGG_DIR}/include && \
+    --with-ogg-libraries=${LIBOGG_LIB_DIR} --with-ogg-includes=${LIBOGG_INC_DIR} && \
 		make
 
+LUAJIT_LIB_DIR := ${LUAJIT_DIR}/src
+LUAJIT_INC_DIR := ${LUAJIT_DIR}/src
 luajit:
 	cd ${LUAJIT_DIR} && \
 		make && \
 		rm -rf src/libluajit.so
 
+OPENAL_LIB_DIR := ${OPENAL_DIR}/build
+OPENAL_INC_DIR := ${OPENAL_DIR}/include
 openal:
 	cd ${OPENAL_DIR} && \
 		mkdir -p build && cd build && \
@@ -103,35 +113,45 @@ openal:
 		rm -f libOpenAL.a &&\
 		find CMakeFiles/openal.dir -name '*.o' | xargs ar rc libOpenAL.a
 
+PHYSFS_LIB_DIR := ${PHYSFS_DIR}/build
+PHYSFS_INC_DIR := ${PHYSFS_DIR}/src
 physfs: zlib
 	cd ${PHYSFS_DIR} && \
 		mkdir -p build && cd build && \
-		cmake -D ZLIB_INCLUDE_DIR=${ZLIB_DIR} -D ZLIB_LIBRARY=${ZLIB_DIR} -D PHYSFS_INTERNAL_ZLIB=ON -D PHYSFS_BUILD_STATIC=ON -D PHYSFS_ARCHIVE_7Z=OFF -D PHYSFS_ARCHIVE_GRP=OFF -D PHYSFS_ARCHIVE_HOG=OFF -D PHYSFS_ARCHIVE_MVL=OFF -D PHYSFS_ARCHIVE_QPAK=OFF -D PHYSFS_ARCHIVE_WAD=OFF -D PHYSFS_BUILD_SHARED=OFF .. && \
+		cmake -D ZLIB_INCLUDE_DIR=${ZLIB_INC_DIR} -D ZLIB_LIBRARY=${ZLIB_LIB_DIR} -D PHYSFS_INTERNAL_ZLIB=ON -D PHYSFS_BUILD_STATIC=ON -D PHYSFS_ARCHIVE_7Z=OFF -D PHYSFS_ARCHIVE_GRP=OFF -D PHYSFS_ARCHIVE_HOG=OFF -D PHYSFS_ARCHIVE_MVL=OFF -D PHYSFS_ARCHIVE_QPAK=OFF -D PHYSFS_ARCHIVE_WAD=OFF -D PHYSFS_BUILD_SHARED=OFF .. && \
 		make
 
+SDL_LIB_DIR := ${SDL_DIR}/build
+SDL_INC_DIR := ${SDL_DIR}/include
 sdl:
 	cd ${SDL_DIR} && \
     cmake -Bbuild -D SDL_STATIC_ENABLED_BY_DEFAULT=ON && \
-    cmake --build build
+    cmake --build ${SDL_DIR}/build
 
+HARFBUZZ_LIB_DIR := ${HARFBUZZ_DIR}/build
+HARFBUZZ_INC_DIR := ${HARFBUZZ_DIR}/src
 harfbuzz:
 	cd ${HARFBUZZ_DIR} && \
     cmake -Bbuild -D BUILD_SHARED_LIBS=OFF && \
-    cmake --build build
+    cmake --build ${HARFBUZZ_DIR}/build
 
 love:
 	cd ${LOVE_DIR} && \
 	cmake -B build -S. -D BUILD_SHARED_LIBS=OFF -D LOVE_MPG123=OFF -D LOVE_JIT=ON -Wno-dev --trace \
-  -D SDL3_INCLUDE_DIRS=${SDL_DIR}/include -D SDL3_LIBRARIES=${SDL_DIR}/build \
-  -D FREETYPE_LIBRARY=${FREETYPE_DIR}/build -D FREETYPE_INCLUDE_DIRS=${FREETYPE_DIR}/include \
-  -D HARFBUZZ_LIBRARY=${HARFBUZZ_DIR}/build -D HARFBUZZ_INCLUDE_DIR=${HARFBUZZ_DIR}/src \
-  -D OPENAL_LIBRARY=${OPENAL_DIR}/build -D OPENAL_INCLUDE_DIR=${OPENAL_DIR}/include \
-  -D MODPLUG_LIBRARY=${LIBMODPLUG_DIR}/src/.libs -D MODPLUG_INCLUDE_DIR=${LIBMODPLUG_DIR} \
-  -D THEORA_LIBRARY=${LIBTHEORA_DIR}/lib/.libs -D THEORADEC_LIBRARY=${LIBTHEORA_DIR}/lib/.libs -D THEORA_INCLUDE_DIR=${LIBTHEORA_DIR}/include \
-  -D VORBIS_LIBRARY=${LIBVORBIS_DIR}/lib/.libs -D VORBISFILE_LIBRARY=${LIBVORBIS_DIR}/lib/.libs -D VORBIS_INCLUDE_DIR=${LIBVORBIS_DIR}/include \
-  -D OGG_LIBRARY=${LIBOGG_DIR}/build -D OGG_INCLUDE_DIR=${LIBOGG_DIR}/include \
-  -D LUAJIT_LIBRARY=${LUAJIT_DIR}/src -D LUAJIT_INCLUDE_DIR=${LUAJIT_DIR}/src && \ 
-	cd build && make
+  -D SDL3_LIBRARIES=${SDL_LIB_DIR} -D SDL3_INCLUDE_DIRS=${SDL_INC_DIR} -DLOVE_USE_SDL3=ON -DSDL3_ROOT=${SDL_DIR} \
+  -D FREETYPE_LIBRARY=${FREETYPE_LIB_DIR} -D FREETYPE_INCLUDE_DIRS=${FREETYPE_INC_DIR} \
+  -D HARFBUZZ_LIBRARY=${HARFBUZZ_LIB_DIR} -D HARFBUZZ_INCLUDE_DIR=${HARFBUZZ_INC_DIR} -DHarfbuzz_ROOT=${HARFBUZZ_DIR} \
+  -D OPENAL_LIBRARY=${OPENAL_LIB_DIR} -D OPENAL_INCLUDE_DIR=${OPENAL_INC_DIR} \
+  -D MODPLUG_LIBRARY=${LIBMODPLUG_LIB_DIR} -D MODPLUG_INCLUDE_DIR=${LIBMODPLUG_INC_DIR} -DModPlug_ROOT=${LIBMODPLUG_DIR} \
+  -D THEORA_LIBRARY=${LIBTHEORA_LIB_DIR} -D THEORADEC_LIBRARY=${LIBTHEORA_LIB_DIR} -D THEORA_INCLUDE_DIR=${LIBTHEORA_INC_DIR} -DTheora_ROOT=${LIBTHEORA_DIR} \
+  -D VORBIS_LIBRARY=${LIBVORBIS_LIB_DIR} -D VORBISFILE_LIBRARY=${LIBVORBIS_LIB_DIR} -D VORBIS_INCLUDE_DIR=${LIBVORBIS_INC_DIR} \
+  -D OGG_LIBRARY=${LIBOGG_LIB_DIR} -D OGG_INCLUDE_DIR=${LIBOGG_INC_DIR} -DVorbis_ROOT=${LIBOGG_DIR} \
+  -D LOVE_JIT=TRUE -D LUAJIT_LIBRARY=${LUAJIT_LIB_DIR} -D LUAJIT_INCLUDE_DIR=${LUAJIT_INC_DIR} -DLuaJIT_ROOT=${LUAJIT_DIR} \
+  -D ZLIB_ROOT=${ZLIB_DIR} \
+  -D Ogg_ROOT=${LIBOGG_DIR}
+	cd ${LOVE_DIR}/build && make
+
+       
 
 clean:
 	(cd ${BZIP2_DIR} && [ -f Makefile ] && make clean || true)
