@@ -19,6 +19,14 @@ all: submodule-update bzip2 zlib freetype libmodplug libogg libtheora libvorbis 
 submodule-update:
 	git submodule update --init --recursive
 
+	@for submodule in $$(git config --file .gitmodules --get-regexp path | awk '{ print $$2 }'); do \
+		cd $$submodule; git clean -df ; \
+		branch=$$(git symbolic-ref --short HEAD 2>/dev/null || echo "Detached HEAD"); \
+		tag=$$(git describe --tags --exact-match 2>/dev/null || echo "No associated tag"); \
+		echo "$$submodule - Branch: [$$branch] Tag: [$$tag]"; \
+		cd - >/dev/null; \
+	done
+
 bzip2:
 	cd ${BZIP2_DIR} && \
   make
